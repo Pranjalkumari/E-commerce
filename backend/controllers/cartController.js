@@ -1,8 +1,27 @@
 import userModel from "../models/userModel.js";
+import jwt from "jsonwebtoken"
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const addToCart = async (req, res) => {
   try {
-    const { userId, itemId, size } = req.body;
+    const { itemId, size } = req.body;
+    const {token} = req.headers.token;
+
+    try {
+      const decoded = jwt.verify(token,JWT_SECRET);
+      req.userId = decoded.userId;;
+      next();
+    } catch (error) {
+      console.log("error ")
+      return res.status(401).json({ success: false, message: "Invalid token" });
+    }
+
+    if(!userId){
+      console.log("No userId present")
+    }
+
+    console.log(userId);
 
     const userData = await userModel.findById(userId);
 
@@ -24,7 +43,7 @@ const addToCart = async (req, res) => {
 
     res.json({ Success: true, message: "Added to cart" });
   } catch (error) {
-    console.log(error);
+    console.log("error in add to cart controller");
     res.json({ Success: false, message: error.message });
   }
 };

@@ -95,7 +95,7 @@ const placeOrderStripe = async (req,res)=>{
         })
 
 
-        res.json({success:true, session_url:session_url})
+        res.json({success:true, session_url:session.url})
 
 
     }catch(error){

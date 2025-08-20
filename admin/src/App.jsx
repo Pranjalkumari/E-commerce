@@ -6,25 +6,26 @@ import Add from "./pages/Add";
 import List from "./pages/List";
 import Orders from "./pages/Orders";
 import Login from "./components/Login";
-import {ToastContainer} from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Users from "./pages/Users";
+import Sellers from "./pages/Sellers";
 
-
-
-export const backendUrl = import.meta.env.VITE_BACKEND_URL
-export const currency = '$'
+export const backendUrl = import.meta.env.VITE_BACKEND_URL;
+export const currency = "$";
 
 const App = () => {
-  const [token, setToken] = useState(localStorage.getItem('token')?localStorage.getItem('token'):'');
+  const [token, setToken] = useState(
+    localStorage.getItem("token") ? localStorage.getItem("token") : ""
+  );
 
-
-  useEffect(()=>{
+  useEffect(() => {
     localStorage.setItem("token", token);
-  },[token])
+  }, [token]);
 
   return (
     <div className="bg-gray-50 min-h-screen">
-    <ToastContainer/>
+      <ToastContainer />
       {token === "" ? (
         <Login setToken={setToken} />
       ) : (
@@ -38,6 +39,8 @@ const App = () => {
                 <Route path="/add" element={<Add token={token} />} />
                 <Route path="/list" element={<List token={token} />} />
                 <Route path="/orders" element={<Orders token={token} />} />
+                <Route path="/users" element={<Users token={token} />} />
+                <Route path="/sellers" element={<Sellers token={token} />} />
               </Routes>
             </div>
           </div>

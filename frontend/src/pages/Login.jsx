@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { ShopContext } from "../context/ShopContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [currentState, setCurrentState] = useState("Login");
@@ -10,20 +11,38 @@ const Login = () => {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [showOtp, setShowOtp] = useState(false);
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
     try {
+      if (showOtp) {
+        const response = await axios.post(backendUrl + "/api/user/verify-otp", {
+          email,
+          otp,
+        });
+        if (response.data.success) {
+          setToken(response.data.token);
+          localStorage.setItem("token", response.data.token);
+          navigate(response.data.role === "seller" ? "/seller" : "/");
+        } else {
+          toast.error(response.data.message);
+        }
+        return;
+      }
+
       if (currentState === "Sign Up") {
         const response = await axios.post(backendUrl + "/api/user/register", {
           name,
           email,
           password,
+          role: "buyer",
         });
         if (response.data.success) {
-          setToken(response.data.token);
-          localStorage.setItem("token", response.data.token);
+          setShowOtp(true);
+          toast.success(response.data.message);
         } else {
           toast.error(response.data.message);
         }
@@ -35,6 +54,7 @@ const Login = () => {
         if (response.data.success) {
           setToken(response.data.token);
           localStorage.setItem("token", response.data.token);
+          navigate(response.data.role === "seller" ? "/seller" : "/");
         } else {
           toast.error(response.data.message);
         }
@@ -57,37 +77,50 @@ const Login = () => {
       className="flex flex-col items-center w-[90%] sm:max-w-96 m-auto mt-14 gap-4 text-gray-800"
     >
       <div className="inline-flex items-center gap-2 mb-2 mt-10">
-        <p className="prata-regular text-3xl">{currentState}</p>
+        <p className="prata-regular text-3xl">
+          {showOtp ? "Verify OTP" : currentState}
+        </p>
         <hr className="border-none h-[1.5px] w-8 bg-gray-800" />
       </div>
-      {currentState === "Login" ? (
-        ""
-      ) : (
+      {showOtp ? (
         <input
-          onChange={(e) => setName(e.target.value)}
-          value={name}
+          onChange={(e) => setOtp(e.target.value)}
+          value={otp}
           type="text"
           className="w-full px-3 py-2 border border-gray-800"
-          placeholder="Name"
+          placeholder="Enter OTP"
           required
         />
+      ) : (
+        <>
+          {currentState === "Sign Up" && (
+            <input
+              onChange={(e) => setName(e.target.value)}
+              value={name}
+              type="text"
+              className="w-full px-3 py-2 border border-gray-800"
+              placeholder="Name"
+              required
+            />
+          )}
+          <input
+            onChange={(e) => setEmail(e.target.value)}
+            value={email}
+            type="email"
+            className="w-full px-3 py-2 border border-gray-800"
+            placeholder="Email"
+            required
+          />
+          <input
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
+            type="password"
+            className="w-full px-3 py-2 border border-gray-800"
+            placeholder="Password"
+            required
+          />
+        </>
       )}
-      <input
-        onChange={(e) => setEmail(e.target.value)}
-        value={email}
-        type="email"
-        className="w-full px-3 py-2 border border-gray-800"
-        placeholder="Email"
-        required
-      />
-      <input
-        onChange={(e) => setPassword(e.target.value)}
-        value={password}
-        type="password"
-        className="w-full px-3 py-2 border border-gray-800"
-        placeholder="Password"
-        required
-      />
       <div className="w-full flex justify-between text-sm mt-[-8px]">
         <p className="cursor-pointer">Forgot your password?</p>
         {currentState === "Login" ? (
@@ -106,8 +139,15 @@ const Login = () => {
           </p>
         )}
       </div>
+      <Link to="/seller-registration" className="text-sm">
+        Register as a Seller
+      </Link>
       <button className="bg-black text-white font-light px-8 py-2 mt-4">
-        {currentState === "Login" ? "Sign In" : "SignUp"}
+        {showOtp
+          ? "Verify"
+          : currentState === "Login"
+          ? "Sign In"
+          : "Sign Up"}
       </button>
     </form>
   );

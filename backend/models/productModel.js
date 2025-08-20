@@ -10,6 +10,7 @@ const productSchema = new mongoose.Schema({
   sizes: { type: Array, required: true },
   bestseller: { type: Boolean },
   date: { type: Number, required: true },
+  sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
 });
 
 const productModel =

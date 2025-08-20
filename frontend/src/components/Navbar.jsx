@@ -1,26 +1,21 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { assets } from "../assets/assets";
 import { Link, NavLink } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
+import useLogout from "../hooks/useLogout";
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
 
   const {
     setShowSearch,
-    getCartCount,
+    getCartCount, 
     navigate,
     token,
-    setToken,
-    setCartItems,
   } = useContext(ShopContext);
 
-  const logout = () => {
-    navigate("/login");
-    localStorage.removeItem("token");
-    setToken("");
-    setCartItems({});
-  };
+  const {logout} = useLogout()
+  
   return (
     <div className="flex items-center justify-between py-5 font-medium">
       <Link to="/">

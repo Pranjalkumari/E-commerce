@@ -3,6 +3,7 @@ import { createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuthContext } from "./AuthContext";
 
 export const ShopContext = createContext();
 
@@ -14,12 +15,22 @@ const ShopContextProvider = (props) => {
   const [showSearch, setShowSearch] = useState(false);
   const [cartItems, setCartItems] = useState({});
   const [products, setProducts] = useState([]);
-  const [token, setToken] = useState("");
+
   const navigate = useNavigate();
 
+  const { token: authToken } = useAuthContext();
+  const token = authToken || localStorage.getItem("token");
+
   const addToCart = async (itemId, size) => {
+    
     if (!size) {
       toast.error("Select Product Size");
+      return;
+    }
+
+    if (!token) {
+      console.log("error in add to cart context")
+      toast.error("User is not authenticated");
       return;
     }
 
@@ -36,19 +47,19 @@ const ShopContextProvider = (props) => {
       cartData[itemId][size] = 1;
     }
 
+    
+
     setCartItems(cartData);
 
-    if (token) {
-      try {
-        await axios.post(
-          backendUrl + "/api/cart/add",
-          { itemId,size },
-          { headers: { token } }
-        );
-      } catch (error) {
-        console.log(error);
-        toast.error(error.message);
-      }
+    try {
+      await axios.post(
+        backendUrl + "/api/cart/add",
+        { itemId, size },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (error) {
+      console.log(error.message);
+      toast.error(error.message);
     }
   };
 
@@ -80,7 +91,7 @@ const ShopContextProvider = (props) => {
         await axios.post(
           backendUrl + "/api/cart/update",
           { itemId, size, quantity },
-          { headers: {token} }
+          { headers: { token } }
         );
       } catch (error) {
         console.log(error);
@@ -117,7 +128,7 @@ const ShopContextProvider = (props) => {
     } catch (error) {
       console.log(error);
       toast.error(error.message);
-    } 
+    }
   };
 
   const getUserCart = async (token) => {
@@ -141,11 +152,11 @@ const ShopContextProvider = (props) => {
   }, []);
 
   useEffect(() => {
-    if (!token && localStorage.getItem("token")) {
-      setToken(localStorage.getItem("token"));
-      getUserCart(localStorage.getItem("token"));
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      getUserCart(storedToken);
     }
-  }, []);
+  }, [token]);
 
   const value = {
     products,
@@ -163,7 +174,6 @@ const ShopContextProvider = (props) => {
     getCartAmount,
     navigate,
     backendUrl,
-    setToken,
     token,
   };
 
